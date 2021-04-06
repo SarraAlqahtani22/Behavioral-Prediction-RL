@@ -44,9 +44,7 @@ done = np.reshape(done, (done.shape[0]//1,1))
 
 inputX = (pre/255)
 inputX = np.reshape(inputX,(pre.shape[0],pre.shape[1],pre.shape[2],1))
-inputY = action.astype('int32')
-print(np.unique(inputY,return_counts=True))
-inputY = to_categorical(inputY)
+inputY = post.astype('int32').reshape((post.shape[0],post.shape[1]*post.shape[2]))
 print(inputX.shape)
 print(inputY.shape)
 
@@ -58,7 +56,7 @@ valY = inputY[130000:]
 
 
 
-es = EarlyStopping(monitor='val_acc', mode='max', verbose=1, patience=30)
+es = EarlyStopping(monitor='val_mae', mode='min', verbose=1, patience=30)
 
 # design network
 model = Sequential()
@@ -71,14 +69,15 @@ model.add(MaxPooling2D((2, 2)))
 model.add(Conv2D(32, (3, 3), activation='relu'))
 model.add(MaxPooling2D((2, 2)))
 model.add(Flatten())
-model.add(Dense(32,activation='softmax'))
+model.add(Dense(200,activation='softmax'))
+model.add(Dense(200,activation='softmax'))
 model.add(Dense(valY.shape[1],activation='softmax'))
-model.compile(loss='categorical_crossentropy', optimizer='rmsprop', metrics=['acc'])
+model.compile(loss='mse', optimizer='rmsprop', metrics=['mae'])
 
 # fit network
 history = model.fit(trainX, trainY, epochs=1000, batch_size=10000, verbose=2,validation_data = (valX,valY),shuffle=False, callbacks=[es])
 
-model.save('Pong_Action_Conv2D.keras')
+model.save('Pong_State_Conv2D.keras')
 print(model.summary())
 
-np.save("history_Pong_Action_Conv2D.npy", history.history, allow_pickle=True)
+np.save("history_Pong_State_Conv2D.npy", history.history, allow_pickle=True)
