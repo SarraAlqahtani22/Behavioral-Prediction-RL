@@ -59,7 +59,7 @@ model.compile(loss='mse', optimizer='adam', metrics=['mae'])
 # fit network
 history = model.fit(trainX, trainY, epochs=5000, batch_size=5000, verbose=2,validation_data = (valX,valY),shuffle=False, callbacks=[es])
 
-model.save('Pend_State_Dense_Network.keras')
+model.save('Pend_State_Dense.keras')
 print(model.summary())
 
-np.save("history_Pend_State_Dense_Network.npy", history.history, allow_pickle=True)
+np.save("history_Pend_State_Dense.npy", history.history, allow_pickle=True)

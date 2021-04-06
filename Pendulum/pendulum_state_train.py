@@ -1,7 +1,8 @@
 #LIBRARIES
 import numpy as np
+from tensorflow.python.keras.callbacks import EarlyStopping
 from tensorflow.python.keras.layers import LSTM, Dense, Input
-from tensorflow.python.keras.models import Model,load_model
+from tensorflow.python.keras.models import Model, load_model, Sequential
 import tensorflow as tf
 from keras.utils import to_categorical
 from keras.regularizers import l2
@@ -10,18 +11,24 @@ from keras.losses import CategoricalCrossentropy
 from scipy.spatial.distance import cosine
 from sklearn.metrics import confusion_matrix,accuracy_score
 
+state_length = 4
+action_length = 1
 
-
-# convert an array of values into a timeseries of 3 previous steps matrix
-def create_timeseries(data):
+def create_timeseries(x,y,done):
     dataX = []
     dataY = []
+    last_done = -1
     for i in range(3,len(data)):
-        if i%25 >= 3:
-            a = np.vstack((data[i - 3], data[i - 2],data[i - 1]))
-            dataX.append(a)
-            dataY.append(data[i])
-    return np.array(dataX), np.array(dataY)
+        #if this is the last timestep of an episode, update index of previous done and add data
+        if done[i] == 1:
+            last_done = i
+            dataX.append(np.vstack((x[i - 3], x[i - 2], x[i - 1], x[i])))
+            dataY.append(y[i])
+        #otherwise, if this is not the last episode AND it has been at least 3 timesteps since the beginning of this episode, add data
+        elif done[i] != 1 and i >= last_done - 4:
+            dataX.append(np.vstack((x[i - 3], x[i - 2],x[i - 1],x[i])))
+            dataY.append(y[i])
+    return np.array(dataX),np.array(dataY)
 
 
 #same results for same model, makes it deterministic
@@ -30,99 +37,50 @@ tf.random.set_seed(1234)
 
 
 #reading data
-input = np.load("Transition_new.npy", allow_pickle=True)
-pre = np.asarray(input[:,0])
-a1 = np.asarray(input[:,1])
-a2 = np.asarray(input[:,2])
-a3 = np.asarray(input[:,3])
-post = np.asarray(input[:,4])
+input = np.load("../../Datasets/Pendulum_DDPG_transition.npy", allow_pickle=True)
 
-#flattens the np arrays
-pre = np.concatenate(pre).ravel()
-pre = np.reshape(pre, (pre.shape[0]//54,54))
-post = np.concatenate(post).ravel()
-post = np.reshape(post, (post.shape[0]//54,54))
+#flattens and unpacks the np arrays
+pre = np.concatenate(input[:,0]).ravel()
+pre = np.reshape(pre, (pre.shape[0]//state_length,state_length))
+action = np.concatenate(input[:,1]).ravel()
+action = np.reshape(action, (action.shape[0]//action_length,action_length))
+post = np.concatenate(input[:,2]).ravel()
+post = np.reshape(post, (post.shape[0]//state_length,state_length))
+done = np.concatenate(input[:,3]).ravel()
+done = np.reshape(done, (done.shape[0]//1,1))
 
-data = np.column_stack((pre,a1.T,a2.T,a3.T))
-print(data.shape)
+#re-concatenates them
+data = np.column_stack((pre,action,post))
 
-
-
-#reshapes trainX to be timeseries data with 3 previous timesteps
-#LSTM requires time series data, so this reshapes for LSTM purposes
-#X has 200000 samples, 3 timestep, 57 features
-inputX, inputY = create_timeseries(data)
-inputX = inputX.astype('float64')
-inputY = inputY.astype('float64')
+inputX = data[:,:action_length+state_length].astype('float64')
+inputY = data[:,action_length+state_length:].astype('float64')
+inputX,inputY = create_timeseries(inputX,inputY,done)
 print(inputX.shape)
 print(inputY.shape)
 
 
-trainX = inputX[:130000]
-trainY = inputY[:130000]
-valX = inputX[130000:]
-valY = inputY[130000:]
-
-
-valYpre = valY[:,:54]
-valY1 = to_categorical(valY[:,-3])
-valY2 = to_categorical(valY[:,-2])
-valY3 = to_categorical(valY[:,-1])
-trainYpre = trainY[:,:54]
-trainY1 = to_categorical(trainY[:,-3])
-trainY2 = to_categorical(trainY[:,-2])
-trainY3 = to_categorical(trainY[:,-1])
+trainX = inputX[:80000]
+trainY = inputY[:80000]
+valX = inputX[80000:]
+valY = inputY[80000:]
 
 
 
-#build functional model
-visible =Input(shape=(trainX.shape[1],trainX.shape[2]))
-hidden1 = LSTM(100, return_sequences=True)(visible)
-hidden2 = LSTM(64,return_sequences=True)(hidden1)
-#first agent branch
-hiddenAgent1 = LSTM(16, name='firstBranch',kernel_regularizer=l2(.01))(hidden2)
-agent1 = Dense(valY1.shape[1],activation='softmax',name='agent1classifier',kernel_regularizer=l2(.01))(hiddenAgent1)
-#second agent branch
-hiddenAgent2 = LSTM(16, name='secondBranch',kernel_regularizer=l2(.01))(hidden2)
-agent2 = Dense(valY2.shape[1],activation='softmax',name='agent2classifier',kernel_regularizer=l2(.01))(hiddenAgent2)
-#third agent branch
-hiddenAgent3 = LSTM(16, name='thirdBranch',kernel_regularizer=l2(.01))(hidden2)
-agent3 = Dense(valY3.shape[1],activation='softmax',name='agent3classifier',kernel_regularizer=l2(.01))(hiddenAgent3)
-#observation branch
-hiddenObservation = LSTM(64, name='observationBranch')(hidden2)
-observation = Dense(valYpre.shape[1], name='observationScalar')(hiddenObservation)
+es = EarlyStopping(monitor='val_mae', mode='min', verbose=1, patience=50)
 
+# design network
+model = Sequential()
+model.add(LSTM(64,input_shape=(trainX.shape[1],trainX.shape[2]),return_sequences=True))
+model.add(LSTM(32,return_sequences=True))
+model.add(LSTM(24))
+model.add(Dense(16))
+model.add(Dense(valY.shape[1]))
+model.compile(loss='mse', optimizer='adam', metrics=['mae'])
 
+# fit network
+history = model.fit(trainX, trainY, epochs=5000, batch_size=5000, verbose=2,validation_data = (valX,valY),shuffle=False, callbacks=[es])
 
-model = Model(inputs=visible,outputs=[agent1,agent2,agent3,observation])
-
-model.compile(optimizer='adam',
-              loss={'agent1classifier': 'categorical_crossentropy',
-                  'agent2classifier': 'categorical_crossentropy',
-                    'agent3classifier': 'categorical_crossentropy',
-                    'observationScalar': 'mse'},
-              metrics={'agent1classifier': ['acc'],
-                       'agent2classifier': ['acc'],
-                        'agent3classifier': ['acc'],
-                       'observationScalar': ['mae']})
+model.save('Pend_State_LSTM_Network.keras')
 print(model.summary())
 
-
-history = model.fit(trainX,
-                    y={'agent1classifier': trainY1,
-                       'agent2classifier':trainY2,
-                       'agent3classifier':trainY3,
-                       'observationScalar': trainYpre}, epochs=300, batch_size=5000, verbose=2,
-                    validation_data = (valX,
-                                       {'agent1classifier': valY1,
-                                        'agent2classifier': valY2,
-                                        'agent3classifier': valY3,
-                                        'observationScalar': valYpre}),shuffle=False)
-
-model.save('StateTransitionNetwork8.keras')
-
-
-#model = load_model("actionMultiClassNetwork.keras")
-
-
-np.save("state_transition_history8.npy", history.history, allow_pickle=True)
+np.save("history_Pend_State_LSTM_Network.npy", history.history, allow_pickle=True)
