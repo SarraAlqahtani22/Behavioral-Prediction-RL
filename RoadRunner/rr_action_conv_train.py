@@ -5,6 +5,7 @@ from tensorflow.python.keras.layers import LSTM, Dense, Conv2D, MaxPooling2D, Fl
 from tensorflow.python.keras.models import Model, load_model, Sequential
 import tensorflow as tf
 from keras.utils import to_categorical
+import matplotlib.pyplot as plt
 from keras.regularizers import l2
 from keras.losses import kullback_leibler_divergence
 from keras.losses import CategoricalCrossentropy
@@ -29,7 +30,7 @@ tf.random.set_seed(1234)
 
 
 #reading data
-input = np.load("../../Datasets/Pong_DQN_transition.npy", allow_pickle=True)
+input = np.load("../../Datasets/RoadRunner_DQN_transition.npy", allow_pickle=True)
 
 #flattens and unpacks the np arrays
 pre = np.asarray(input[:,0])
@@ -45,16 +46,15 @@ done = np.reshape(done, (done.shape[0]//1,1))
 inputX = (pre/255)
 inputX = np.reshape(inputX,(pre.shape[0],pre.shape[1],pre.shape[2],1))
 inputY = action.astype('int32')
+print(np.unique(inputY,return_counts=True))
 inputY = to_categorical(inputY)
 print(inputX.shape)
 print(inputY.shape)
 
-
-trainX = inputX[:150000]
-trainY = inputY[:150000]
-valX = inputX[150000:]
-valY = inputY[150000:]
-
+trainX = inputX[:100000]
+trainY = inputY[:100000]
+valX = inputX[100000:130000]
+valY = inputY[100000:130000]
 
 
 es = EarlyStopping(monitor='val_acc', mode='max', verbose=1, patience=50)
@@ -70,14 +70,14 @@ model.add(MaxPooling2D((2, 2)))
 model.add(Conv2D(32, (3, 3), activation='relu'))
 model.add(MaxPooling2D((2, 2)))
 model.add(Flatten())
-model.add(Dense(64,activation='softmax'),)
+model.add(Dense(32,activation='softmax'),)
 model.add(Dense(valY.shape[1],activation='softmax'))
-model.compile(loss='categorical_crossentropy', optimizer='adam', metrics=['acc'])
+model.compile(loss='categorical_crossentropy', optimizer='rmsprop', metrics=['acc'])
 
 # fit network
-history = model.fit(trainX, trainY, epochs=5000, batch_size=1000, verbose=2,validation_data = (valX,valY),shuffle=False, callbacks=[es])
+history = model.fit(trainX, trainY, epochs=1000, batch_size=1000, verbose=2,validation_data = (valX,valY),shuffle=False, callbacks=[es])
 
-model.save('Pong_Action_Conv2D_Network.keras')
+model.save('RR_Action_Conv2D.keras')
 print(model.summary())
 
-np.save("history_Pong_Action_Conv2D_Network.npy", history.history, allow_pickle=True)
+np.save("history_RR_Action_Conv2D.npy", history.history, allow_pickle=True)
