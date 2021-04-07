@@ -51,10 +51,10 @@ inputY = to_categorical(inputY)
 print(inputX.shape)
 print(inputY.shape)
 
-trainX = inputX[:100000]
-trainY = inputY[:100000]
-valX = inputX[100000:130000]
-valY = inputY[100000:130000]
+trainX = inputX[:170000]
+trainY = inputY[:170000]
+valX = inputX[170000:]
+valY = inputY[170000:]
 
 
 es = EarlyStopping(monitor='val_acc', mode='max', verbose=1, patience=50)
@@ -70,12 +70,12 @@ model.add(MaxPooling2D((2, 2)))
 model.add(Conv2D(32, (3, 3), activation='relu'))
 model.add(MaxPooling2D((2, 2)))
 model.add(Flatten())
-model.add(Dense(32,activation='softmax'),)
+model.add(Dense(32,activation='relu'))
 model.add(Dense(valY.shape[1],activation='softmax'))
 model.compile(loss='categorical_crossentropy', optimizer='rmsprop', metrics=['acc'])
 
 # fit network
-history = model.fit(trainX, trainY, epochs=1000, batch_size=1000, verbose=2,validation_data = (valX,valY),shuffle=False, callbacks=[es])
+history = model.fit(trainX, trainY, epochs=1000, batch_size=1000, verbose=2,validation_data = (valX,valY),shuffle=True, callbacks=[es])
 
 model.save('RR_Action_Conv2D.keras')
 print(model.summary())

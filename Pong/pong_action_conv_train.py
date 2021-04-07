@@ -76,7 +76,7 @@ model.add(Dense(valY.shape[1],activation='softmax'))
 model.compile(loss='categorical_crossentropy', optimizer='rmsprop', metrics=['acc'])
 
 # fit network
-history = model.fit(trainX, trainY, epochs=1000, batch_size=10000, verbose=2,validation_data = (valX,valY),shuffle=False, callbacks=[es])
+history = model.fit(trainX, trainY, epochs=1000, batch_size=1000, verbose=2,validation_data = (valX,valY),shuffle=False, callbacks=[es])
 
 model.save('Pong_Action_Conv2D.keras')
 print(model.summary())
