@@ -3,12 +3,6 @@ from tensorflow.python.keras.callbacks import EarlyStopping
 from tensorflow.python.keras.layers import LSTM, Dense, Input
 from tensorflow.python.keras.models import Model, load_model, Sequential
 import tensorflow as tf
-from keras.utils import to_categorical
-from keras.regularizers import l2
-from keras.losses import kullback_leibler_divergence
-from keras.losses import CategoricalCrossentropy
-from scipy.spatial.distance import cosine
-from sklearn.metrics import confusion_matrix,accuracy_score
 
 state_length = 11
 action_length = 3
