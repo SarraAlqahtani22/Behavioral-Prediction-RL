@@ -35,7 +35,7 @@ done = np.reshape(done, (done.shape[0]//1,1))
 #re-concatenates them
 data = np.column_stack((pre,action,post,done))
 
-inputX = data[:,:state_length].astype('float64')
+inputX = data[:,:state_length+action_length].astype('float64')
 inputY = data[:,state_length+action_length:(2*state_length)+action_length].astype('float64')
 
 
