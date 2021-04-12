@@ -26,3 +26,16 @@ plt.plot(history_lstm['mae'], label='Train LSTM')
 plt.title("State MAE")
 plt.legend()
 plt.show()
+
+
+history_lstm = np.load("history_Pend_State_LSTM.npy", allow_pickle=True).item()
+history_10 = np.load("history_Pend_State_LSTM10.npy", allow_pickle=True).item()
+
+
+plt.plot(history_lstm['val_mae'], label='Len4 Val')
+plt.plot(history_10['val_mae'], label='Len10 Val')
+plt.title("State MAE")
+plt.legend()
+plt.show()
+
+
