@@ -79,7 +79,7 @@ model.compile(loss='mse', optimizer='rmsprop', metrics=['mae'])
 # fit network
 history = model.fit(trainX, trainY, epochs=5000, batch_size=1000, verbose=2,validation_data = (valX,valY),shuffle=False, callbacks=[es])
 
-model.save('Pong_State_Conv2D60.keras')
+model.save('Pong_State_Conv2D.keras')
 print(model.summary())
 
-np.save("history_Pong_State_Conv2D60.npy", history.history, allow_pickle=True)
+np.save("history_Pong_State_Conv2D.npy", history.history, allow_pickle=True)
