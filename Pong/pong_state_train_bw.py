@@ -64,7 +64,7 @@ valY = inputY[70000:]
 
 
 
-es = EarlyStopping(monitor='val_mae', mode='min', verbose=1, patience=30)
+es = EarlyStopping(monitor='val_mae', mode='min', verbose=1, patience=50)
 
 # design network
 model = Sequential()
