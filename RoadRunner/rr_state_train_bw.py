@@ -4,6 +4,8 @@ from tensorflow.python.keras.callbacks import EarlyStopping
 from tensorflow.python.keras.layers import LSTM, Dense, Conv2D, MaxPooling2D, Flatten, UpSampling2D
 from tensorflow.python.keras.models import Model, load_model, Sequential
 import tensorflow as tf
+import matplotlib.pyplot as plt
+
 
 
 def unpack(list):
@@ -11,6 +13,17 @@ def unpack(list):
     newList = []
     for i in range(list.shape[0]):
         newList.append(list[i][0])
+    return np.asarray(newList)
+
+
+def change_color(list):
+    newList = []
+    for i in range(list.shape[0]):
+        I = list[i]
+        I[I < .5] = 0  # erase background (background type 1)
+        I[I >= .5] = 1  # erase background (background type 2)
+        newList.append(I)
+
     return np.asarray(newList)
 
 
@@ -37,11 +50,10 @@ done = np.concatenate(input[:,3:]).ravel()
 done = np.reshape(done, (done.shape[0]//1,1))
 
 
-inputX = (pre/255).reshape((pre.shape[0],pre.shape[1],pre.shape[2],1))
-inputY = (post/255).reshape((post.shape[0],post.shape[1],post.shape[2],1))
+inputX = change_color((pre/255).reshape((pre.shape[0],pre.shape[1],pre.shape[2],1)))
+inputY = change_color((post/255).reshape((post.shape[0],post.shape[1],post.shape[2],1)))
 print(inputX.shape)
 print(inputY.shape)
-
 
 trainX = inputX[:70000]
 trainY = inputY[:70000]
@@ -50,7 +62,7 @@ valY = inputY[70000:]
 
 
 
-es = EarlyStopping(monitor='val_mae', mode='min', verbose=1, patience=60)
+es = EarlyStopping(monitor='val_mae', mode='min', verbose=1, patience=50)
 
 # design network
 model = Sequential()
@@ -74,7 +86,7 @@ model.compile(loss='mse', optimizer='rmsprop', metrics=['mae'])
 # fit network
 history = model.fit(trainX, trainY, epochs=5000, batch_size=1000, verbose=2,validation_data = (valX,valY),shuffle=False, callbacks=[es])
 
-model.save('RR_State_Conv2D.keras')
+model.save('RR_State_Conv2DBW.keras')
 print(model.summary())
 
-np.save("history_RR_State_Conv2D.npy", history.history, allow_pickle=True)
+np.save("history_RR_State_Conv2DBW.npy", history.history, allow_pickle=True)
