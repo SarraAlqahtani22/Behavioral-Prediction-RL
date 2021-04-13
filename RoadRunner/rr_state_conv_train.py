@@ -1,15 +1,10 @@
 #LIBRARIES
 import numpy as np
 from tensorflow.python.keras.callbacks import EarlyStopping
-from tensorflow.python.keras.layers import LSTM, Dense, Conv2D, MaxPooling2D, Flatten, Reshape, UpSampling2D
+from tensorflow.python.keras.layers import LSTM, Dense, Conv2D, MaxPooling2D, Flatten, UpSampling2D
 from tensorflow.python.keras.models import Model, load_model, Sequential
 import tensorflow as tf
-from keras.utils import to_categorical
-from keras.regularizers import l2
-from keras.losses import kullback_leibler_divergence
-from keras.losses import CategoricalCrossentropy
-from scipy.spatial.distance import cosine
-from sklearn.metrics import confusion_matrix,accuracy_score
+
 
 def unpack(list):
     list = list.ravel()
@@ -29,7 +24,7 @@ tf.random.set_seed(1234)
 
 
 #reading data
-input = np.load("../../Datasets/Pong_DQN_transition.npy", allow_pickle=True)[:90000]
+input = np.load("../../Datasets/RoadRunner_DQN_transition.npy", allow_pickle=True)[:90000]
 
 #flattens and unpacks the np arrays
 pre = np.asarray(input[:,0])
@@ -79,7 +74,7 @@ model.compile(loss='mse', optimizer='rmsprop', metrics=['mae'])
 # fit network
 history = model.fit(trainX, trainY, epochs=5000, batch_size=1000, verbose=2,validation_data = (valX,valY),shuffle=False, callbacks=[es])
 
-model.save('Pong_State_Conv2D.keras')
+model.save('RR_State_Conv2D.keras')
 print(model.summary())
 
-np.save("history_Pong_State_Conv2D.npy", history.history, allow_pickle=True)
+np.save("history_RR_State_Conv2D.npy", history.history, allow_pickle=True)
