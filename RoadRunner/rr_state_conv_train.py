@@ -50,7 +50,7 @@ valY = inputY[70000:]
 
 
 
-es = EarlyStopping(monitor='val_mae', mode='min', verbose=1, patience=60)
+es = EarlyStopping(monitor='val_mae', mode='min', verbose=1, patience=150)
 
 # design network
 model = Sequential()
@@ -74,7 +74,7 @@ model.compile(loss='mse', optimizer='rmsprop', metrics=['mae'])
 # fit network
 history = model.fit(trainX, trainY, epochs=5000, batch_size=1000, verbose=2,validation_data = (valX,valY),shuffle=False, callbacks=[es])
 
-model.save('RR_State_Conv2D.keras')
+model.save('RR_State_Conv2D150.keras')
 print(model.summary())
 
-np.save("history_RR_State_Conv2D.npy", history.history, allow_pickle=True)
+np.save("history_RR_State_Conv2D150.npy", history.history, allow_pickle=True)

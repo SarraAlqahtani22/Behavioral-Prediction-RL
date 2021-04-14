@@ -1,15 +1,9 @@
-#LIBRARIES
 import numpy as np
 from tensorflow.python.keras.callbacks import EarlyStopping
 from tensorflow.python.keras.layers import LSTM, Dense, Conv2D, MaxPooling2D, Flatten, Reshape, UpSampling2D
 from tensorflow.python.keras.models import Model, load_model, Sequential
 import tensorflow as tf
-from keras.utils import to_categorical
-from keras.regularizers import l2
-from keras.losses import kullback_leibler_divergence
-from keras.losses import CategoricalCrossentropy
-from scipy.spatial.distance import cosine
-from sklearn.metrics import confusion_matrix,accuracy_score
+
 
 def unpack(list):
     list = list.ravel()
@@ -55,7 +49,7 @@ valY = inputY[70000:]
 
 
 
-es = EarlyStopping(monitor='val_mae', mode='min', verbose=1, patience=60)
+es = EarlyStopping(monitor='val_mae', mode='min', verbose=1, patience=150)
 
 # design network
 model = Sequential()
@@ -79,7 +73,7 @@ model.compile(loss='mse', optimizer='rmsprop', metrics=['mae'])
 # fit network
 history = model.fit(trainX, trainY, epochs=5000, batch_size=1000, verbose=2,validation_data = (valX,valY),shuffle=False, callbacks=[es])
 
-model.save('Pong_State_Conv2D.keras')
+model.save('Pong_State_Conv2D150.keras')
 print(model.summary())
 
-np.save("history_Pong_State_Conv2D.npy", history.history, allow_pickle=True)
+np.save("history_Pong_State_Conv2D150.npy", history.history, allow_pickle=True)
