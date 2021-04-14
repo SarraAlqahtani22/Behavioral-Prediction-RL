@@ -3,7 +3,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 from tensorflow.keras.models import load_model
 
-
+'''
 history_dense = np.load("history_Pend_Action_Dense.npy", allow_pickle=True).item()
 history_lstm = np.load("history_Pend_Action_LSTM.npy", allow_pickle=True).item()
 
@@ -28,16 +28,16 @@ plt.title("State MAE")
 plt.legend()
 plt.show()
 
-
+'''
 history_lstm = np.load("history_Pend_State_LSTM.npy", allow_pickle=True).item()
-history_150 = np.load("history_Pend_State_LSTM150.npy", allow_pickle=True).item()
+history_150 = np.load("history_Pend_State_LSTM.npy", allow_pickle=True).item()
 
 
 plt.plot(history_lstm['val_mae'], label='50')
-plt.plot(history_150['val_mae'], label='150 Train')
+plt.plot(history_150['val_mae'], label='500 Train')
 plt.title("State MAE")
 plt.legend()
 plt.show()
 
-print(history_lstm['val_mae'][-5:])
-print(history_150['val_mae'][-5:])
+print(history_lstm['val_mae'][-8:])
+print(history_150['val_mae'][-8:])

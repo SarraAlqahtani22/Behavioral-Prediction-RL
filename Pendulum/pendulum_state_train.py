@@ -6,8 +6,7 @@ from tensorflow.python.keras.models import Model, load_model, Sequential
 import tensorflow as tf
 from keras.utils import to_categorical
 from keras.regularizers import l2
-from keras.losses import kullback_leibler_divergence
-from keras.losses import CategoricalCrossentropy
+from keras.losses import kullback_leibler_divergence, mean_squared_logarithmic_error
 from scipy.spatial.distance import cosine
 from sklearn.metrics import confusion_matrix,accuracy_score
 
@@ -66,7 +65,7 @@ valY = inputY[80000:]
 
 
 
-es = EarlyStopping(monitor='val_mae', mode='min', verbose=1, patience=150)
+es = EarlyStopping(monitor='val_mae', mode='min', verbose=1, patience=500)
 
 # design network
 model = Sequential()
@@ -75,12 +74,12 @@ model.add(LSTM(32,return_sequences=True))
 model.add(LSTM(24))
 model.add(Dense(16))
 model.add(Dense(valY.shape[1]))
-model.compile(loss='mse', optimizer='adam', metrics=['mae'])
+model.compile(loss='mean_squared_logarithmic_error', optimizer='adam', metrics=['mae'])
 
 # fit network
 history = model.fit(trainX, trainY, epochs=5000, batch_size=5000, verbose=2,validation_data = (valX,valY),shuffle=False, callbacks=[es])
 
-model.save('Pend_State_LSTM150.keras')
+model.save('Pend_State_LSTM_msle.keras')
 print(model.summary())
 
-np.save("history_Pend_State_LSTM150.npy", history.history, allow_pickle=True)
+np.save("history_Pend_State_LSTM_msle.npy", history.history, allow_pickle=True)
