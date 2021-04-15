@@ -66,7 +66,7 @@ valY = inputY[80000:]
 
 
 
-es = EarlyStopping(monitor='val_mae', mode='min', verbose=1, patience=50)
+es = EarlyStopping(monitor='val_mae', mode='min', verbose=1, patience=500)
 
 # design network
 model = Sequential()
@@ -78,9 +78,9 @@ model.add(Dense(valY.shape[1]))
 model.compile(loss='mse', optimizer='adam', metrics=['mae'])
 
 # fit network
-history = model.fit(trainX, trainY, epochs=5000, batch_size=5000, verbose=2,validation_data = (valX,valY),shuffle=False, callbacks=[es])
+history = model.fit(trainX, trainY, epochs=10000, batch_size=5000, verbose=2,validation_data = (valX,valY),shuffle=False, callbacks=[es])
 
-model.save('Ant_State_LSTM.keras')
+model.save('Ant_State_LSTM_v3.keras')
 print(model.summary())
 
-np.save("history_Ant_State_LSTM.npy", history.history, allow_pickle=True)
+np.save("history_Ant_State_LSTM_v3.npy", history.history, allow_pickle=True)

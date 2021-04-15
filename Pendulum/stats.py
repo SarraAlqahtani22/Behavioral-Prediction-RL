@@ -1,7 +1,6 @@
 #LIBRARIES
 import matplotlib.pyplot as plt
 import numpy as np
-from tensorflow.keras.models import load_model
 
 '''
 history_dense = np.load("history_Pend_Action_Dense.npy", allow_pickle=True).item()
@@ -30,7 +29,7 @@ plt.show()
 
 '''
 history_lstm = np.load("history_Pend_State_LSTM.npy", allow_pickle=True).item()
-history_150 = np.load("history_Pend_State_LSTM.npy", allow_pickle=True).item()
+history_150 = np.load("history_Pend_State_LSTM_v2.npy", allow_pickle=True).item()
 
 
 plt.plot(history_lstm['val_mae'], label='50')

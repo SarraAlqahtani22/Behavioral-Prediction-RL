@@ -66,7 +66,7 @@ valY = inputY[80000:]
 
 
 
-es = EarlyStopping(monitor='val_mae', mode='min', verbose=1, patience=50)
+es = EarlyStopping(monitor='val_mae', mode='min', verbose=1, patience=500)
 
 # design network
 model = Sequential()
@@ -80,7 +80,7 @@ model.compile(loss='mse', optimizer='adam', metrics=['mae'])
 # fit network
 history = model.fit(trainX, trainY, epochs=5000, batch_size=5000, verbose=2,validation_data = (valX,valY),shuffle=False, callbacks=[es])
 
-model.save('Hopper_State_LSTM.keras')
+model.save('Hopper_State_LSTM_v2.keras')
 print(model.summary())
 
-np.save("history_Hopper_State_LSTM.npy", history.history, allow_pickle=True)
+np.save("history_Hopper_State_LSTM_v2.npy", history.history, allow_pickle=True)

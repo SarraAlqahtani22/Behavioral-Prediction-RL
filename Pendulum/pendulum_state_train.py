@@ -4,11 +4,6 @@ from tensorflow.python.keras.callbacks import EarlyStopping
 from tensorflow.python.keras.layers import LSTM, Dense, Input
 from tensorflow.python.keras.models import Model, load_model, Sequential
 import tensorflow as tf
-from keras.utils import to_categorical
-from keras.regularizers import l2
-from keras.losses import kullback_leibler_divergence, mean_squared_logarithmic_error
-from scipy.spatial.distance import cosine
-from sklearn.metrics import confusion_matrix,accuracy_score
 
 state_length = 4
 action_length = 1
@@ -74,12 +69,12 @@ model.add(LSTM(32,return_sequences=True))
 model.add(LSTM(24))
 model.add(Dense(16))
 model.add(Dense(valY.shape[1]))
-model.compile(loss='mean_squared_logarithmic_error', optimizer='adam', metrics=['mae'])
+model.compile(loss='log_cosh', optimizer='adam', metrics=['mae'])
 
 # fit network
 history = model.fit(trainX, trainY, epochs=5000, batch_size=5000, verbose=2,validation_data = (valX,valY),shuffle=False, callbacks=[es])
 
-model.save('Pend_State_LSTM_msle.keras')
+model.save('Pend_State_LSTM_cosh.keras')
 print(model.summary())
 
-np.save("history_Pend_State_LSTM_msle.npy", history.history, allow_pickle=True)
+np.save("history_Pend_State_LSTM_cosh.npy", history.history, allow_pickle=True)

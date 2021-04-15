@@ -1,28 +1,21 @@
 #LIBRARIES
 import matplotlib.pyplot as plt
 import numpy as np
-from tensorflow.keras.models import load_model
 
-history_dense = np.load("history_Ant_Action_Dense.npy", allow_pickle=True).item()
-history_lstm = np.load("history_Ant_Action_LSTM.npy", allow_pickle=True).item()
+history1 = np.load("history_Ant_State_LSTM.npy", allow_pickle=True).item()
+history2 = np.load("history_Ant_State_LSTM_v2.npy", allow_pickle=True).item()
+history3 = np.load("history_Ant_State_LSTM_v3.npy", allow_pickle=True).item()
 
 #PLOTS
-plt.plot(history_dense['val_mae'], label='Val Dense')
-plt.plot(history_dense['mae'], label='Train Dense')
-plt.plot(history_lstm['val_mae'], label='Val LSTM')
-plt.plot(history_lstm['mae'], label='Train LSTM')
-plt.title("Action MAE")
+plt.plot(history3['val_mae'], label='v3')
+plt.plot(history2['val_mae'], label='v2')
+plt.plot(history1['val_mae'], label='v1')
+
+plt.title("Ant State MAE")
 plt.legend()
 plt.show()
 
-history_dense = np.load("history_Ant_State_Dense.npy", allow_pickle=True).item()
-history_lstm = np.load("history_Ant_State_LSTM.npy", allow_pickle=True).item()
 
-#PLOTS
-plt.plot(history_dense['val_mae'], label='Val Dense')
-plt.plot(history_dense['mae'], label='Train Dense')
-plt.plot(history_lstm['val_mae'], label='Val LSTM')
-plt.plot(history_lstm['mae'], label='Train LSTM')
-plt.title("State MAE")
-plt.legend()
-plt.show()
+print(history1['val_mae'][-8:])
+print(history2['val_mae'][-8:])
+print(history3['val_mae'][-8:])
